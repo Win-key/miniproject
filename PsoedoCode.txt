@@ -1,0 +1,46 @@
+/*********************************************************************
+ * File                 : ApplyLeave.txt
+ * Author Name          : Venkatesh Rajendran
+ * Desc                 : Program to apply leave
+ * Version              : 1.0
+ * Last Modified Date   : 21-Feb-2018
+ * Change Description   : Description about the changes implemented
+ *********************************************************************/
+
+BEGIN
+Call applyLeave(@ModelAttribute("leave") @Valid LeaveBean leave,BindingResult result) in EmployeeControllerclass in controller Layer
+
+	BEGIN
+
+	Declare LeaveBean leave and call findEmployeeById(leave.getEmpId()) in EmployeeServiceImpl class in Service Layer
+	
+	IF(noofdaysApplied<0)
+		RAISE EmployeeException "Date from which you are applying leave cannot be lesser than the date until when you are applying"
+	END IF
+
+	IF(leave NOT NULL)
+
+		leave = findLeaveById(leave.getEmpId());
+
+		IF(leave IS null)
+			CALL addLeave(leave) IN service layer
+			PRINT "Leave applied successfully!"
+		ELSE
+			IF(getApprovalStatus() OF leaveBean equals TO "applied")
+				PRINT "Your previous leave application is still in process!"
+			ELSE
+				SET DATE FROM AND DATE TO
+				 CALL updateLeave(leaveBean) IN service
+				PRINT "Leave applied successfully!"
+			END IF	
+		END IF
+
+	ELSE
+		PRINT "Sorry!!Employee with the given id doesn't exist"
+	END IF
+
+	EXCEPTION 
+		WHEN EmployeeException THEN 
+		    PRINT errormessage
+	END
+END      
