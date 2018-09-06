@@ -1,0 +1,140 @@
+Entry.java
+--------------
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class Entry extends JPanel {
+    private JTextField textField;
+    private JButton plus;
+    private JButton minus;
+    private EntryList parent;
+    private boolean firstEntry;
+    public boolean isFirstEntry() {
+		return firstEntry;
+	}
+
+	public void setFirstEntry(boolean firstEntry) {
+		this.firstEntry = firstEntry;
+	}
+
+	public Entry( String textFieldText, EntryList list, boolean firstEntry) {
+        this.parent = list;
+        this.firstEntry = firstEntry;
+        if (firstEntry) {
+        	this.plus = new JButton("+");
+            this.plus.addActionListener(new ActionListener() {
+    			@Override
+    			public void actionPerformed(ActionEvent e) {
+    	            parent.cloneEntry(Entry.this);
+    	        }
+    		});
+		}
+        
+        this.minus = new JButton("-");
+        this.minus.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+	            parent.removeItem(Entry.this);
+	        }
+		});
+        this.textField = new JTextField(10);
+        this.textField.setText(textFieldText);
+        if (firstEntry) {
+        	add(this.plus);
+		}
+        add(this.minus);
+        add(this.textField);
+    }
+
+    public void enableAdd(boolean enabled) {
+        this.plus.setEnabled(enabled);
+    }
+    public void enableMinus(boolean enabled) {
+        this.minus.setEnabled(enabled);
+    }
+}
+
+---------------------------------------------------------------
+EntryList.java
+----------------------
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+
+public class EntryList extends JPanel{
+    private List<Entry> entries;
+
+    public EntryList() {
+        this.entries = new ArrayList<Entry>();
+
+        Entry initial = new Entry("", this, true);
+        entries.add(initial);
+
+        add(initial);
+        refresh();
+    }
+
+    public void cloneEntry(Entry entry) {
+        Entry theClone = new Entry("", this, false);
+
+        entries.add(theClone);
+
+        add(theClone);
+        refresh();
+    }
+
+    public void removeItem(Entry entry) {
+        entries.remove(entry);
+        remove(entry);
+        refresh();
+    }
+
+    private void refresh() {
+        invalidate();
+        validate();
+        repaint();
+        if (entries.size() == 1 ) {
+            entries.get(0).enableMinus(false);
+        }
+        else {
+            for (Entry e : entries) {
+            	if (e.isFirstEntry()) {
+            		e.enableMinus(false);
+				} else {
+					e.enableMinus(true);
+				}
+                
+            }
+        }
+    }
+
+}
+-------------------------------------------
+main.java
+------------
+
+import javax.swing.JFrame;
+
+public class Main {
+	
+    public static void main(String[] args) {
+        JFrame frame = new JFrame();
+        
+        EntryList panel = new EntryList();
+        frame.setSize(700,700);
+        frame.getContentPane().add(panel);
+        frame.pack();
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+}
